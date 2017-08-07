@@ -25,21 +25,30 @@ var requestHandler = function(request, response) {
 
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
-  if (request.method === 'OPTIONS') {
-    response.writeHead(200, headers);
+  var url = request.url.split('?')[0];
+
+  if (url === '/classes/messages') {
+
+    if (request.method === 'OPTIONS') {
+      response.writeHead(200, headers);
+      response.end();
+
+    } else if (request.method === 'GET') {
+      headers['Content-Type'] = 'application/json';
+      response.writeHead(200, headers);
+      response.end(JSON.stringify(messages));
+
+    } else if (request.method === 'POST') {
+      gatherMessage(request, function(msgObj) {
+        messages.results.unshift(msgObj);
+        response.writeHead(201, headers);
+        response.end(JSON.stringify(null));
+      });
+    }
+
+  } else {
+    response.writeHead(404, headers);
     response.end();
-
-  } else if (request.method === 'GET') {
-    headers['Content-Type'] = 'application/json';
-    response.writeHead(200, headers);
-    response.end(JSON.stringify(messages));
-
-  } else if (request.method === 'POST') {
-    gatherMessage(request, function(msgObj) {
-      messages.results.unshift(msgObj);
-      response.writeHead(201, headers);
-      response.end(JSON.stringify(null));
-    });
   }
 
 };
