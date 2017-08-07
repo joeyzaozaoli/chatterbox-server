@@ -1,5 +1,5 @@
 var messages = {results:
-  [ {username: 'josephine', text: 'Hey Hey Hey',roomname: 'Pinnacles'},
+  [ {username: 'josephine', text: 'Hey Hey Hey', roomname: 'Pinnacles'},
     {username: 'john', text: 'Hello Hello Hello', roomname: 'Valley'} ]
 };
 
@@ -10,15 +10,38 @@ var headers = {
   'access-control-max-age': 10 // Seconds.
 };
 
+var gatherMessage = function(request, callback) {
+  var dataStream = '';
+  request.on('data', function(chunk) {
+    dataStream += chunk;
+  });
+  request.on('end', function() {
+    var msgObj = JSON.parse(dataStream);
+    callback(msgObj);
+  });
+};
+
 var requestHandler = function(request, response) {
 
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
-  if (request.method === 'GET') {
+  if (request.method === 'OPTIONS') {
+    response.writeHead(200, headers);
+    response.end();
+
+  } else if (request.method === 'GET') {
     headers['Content-Type'] = 'application/json';
     response.writeHead(200, headers);
     response.end(JSON.stringify(messages));
+
+  } else if (request.method === 'POST') {
+    gatherMessage(request, function(msgObj) {
+      messages.results.unshift(msgObj);
+      response.writeHead(201, headers);
+      response.end(JSON.stringify(null));
+    });
   }
+
 };
 
 exports.requestHandler = requestHandler;
