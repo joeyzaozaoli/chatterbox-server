@@ -13,7 +13,7 @@ var headers = {
 var gatherMessage = function(request, callback) {
   var dataStream = '';
   request.on('data', function(chunk) {
-    dataStream += chunk;
+    dataStream += chunk.toString();
   });
   request.on('end', function() {
     var msgObj = JSON.parse(dataStream);
